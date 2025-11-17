@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Neuro Pixel Stream Demo UMD</title>
+    <title>Neuro Pixel Stream Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://unpkg.com/@convai/experience-embed/dist/core/convai-embed.umd.js"></script>
     <style>
@@ -13,7 +13,6 @@
         background: #f0f0f0;
       }
 
-      /* Size is now controlled mostly via JS */
       #pixel-stream-container {
         width: 100%;
         background: #000;
@@ -50,11 +49,10 @@
     <script>
       const container = document.getElementById("pixel-stream-container");
 
-      // ---- Dynamic resize (Option 3) ----
+      // ---- Dynamic resize (4:3) ----
       function resizeStream() {
-        // 90% of viewport width
-        const width = window.innerWidth * 0.9;
-        const height = (width * 9) / 16; // keep 16:9
+        const width = window.innerWidth * 0.9;  // adjust width %
+        const height = (width * 3) / 4;         // 4:3 ratio
 
         container.style.width = width + "px";
         container.style.height = height + "px";
@@ -95,50 +93,26 @@
 
       window.pixelStream = pixelStream;
 
-      // ---- Button handlers ----
+      // ---- Buttons ----
       document.getElementById("startBtn").addEventListener("click", () => {
         pixelStream.initializeExperience();
       });
 
-      document
-        .getElementById("enableCameraBtn")
-        .addEventListener("click", async () => {
-          try {
-            await pixelStream.enableCamera();
-          } catch (error) {
-            console.error("Failed to enable camera:", error);
-          }
-        });
+      document.getElementById("enableCameraBtn").addEventListener("click", () => {
+        pixelStream.enableCamera().catch(console.error);
+      });
 
-      document
-        .getElementById("disableCameraBtn")
-        .addEventListener("click", async () => {
-          try {
-            await pixelStream.disableCamera();
-          } catch (error) {
-            console.error("Failed to disable camera:", error);
-          }
-        });
+      document.getElementById("disableCameraBtn").addEventListener("click", () => {
+        pixelStream.disableCamera().catch(console.error);
+      });
 
-      document
-        .getElementById("enableAudioBtn")
-        .addEventListener("click", async () => {
-          try {
-            await pixelStream.enableCharacterAudio();
-          } catch (error) {
-            console.error("Failed to enable audio:", error);
-          }
-        });
+      document.getElementById("enableAudioBtn").addEventListener("click", () => {
+        pixelStream.enableCharacterAudio().catch(console.error);
+      });
 
-      document
-        .getElementById("disableAudioBtn")
-        .addEventListener("click", async () => {
-          try {
-            await pixelStream.disableCharacterAudio();
-          } catch (error) {
-            console.error("Failed to disable audio:", error);
-          }
-        });
+      document.getElementById("disableAudioBtn").addEventListener("click", () => {
+        pixelStream.disableCharacterAudio().catch(console.error);
+      });
     </script>
   </body>
 </html>

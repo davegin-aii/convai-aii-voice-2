@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Convai Pixel Stream Demo UMD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://unpkg.com/@convai/experience-embed/dist/core/convai-embed.umd.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f0f0f0;
+      }
+
+      #pixel-stream-container {
+        width: 100%;
+        height: 600px;
+        background: #000;
+        margin-bottom: 16px;
+        position: relative;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      button {
+        padding: 10px 16px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Convai Pixel Stream Demo</h1>
+    <div id="pixel-stream-container"></div>
+
+    <div class="controls">
+      <button id="startBtn">Start Experience</button>
+      <button id="enableCameraBtn">Enable Camera</button>
+      <button id="disableCameraBtn">Disable Camera</button>
+      <button id="enableAudioBtn">Enable Audio</button>
+      <button id="disableAudioBtn">Disable Audio</button>
+    </div>
+
+    <script>
+      const container = document.getElementById("pixel-stream-container");
+
+      const customInitialScreen = document.createElement("div");
+      customInitialScreen.style.cssText = `
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        font-family: Arial, sans-serif;
+      `;
+      customInitialScreen.innerHTML = `
+        <div style="text-align: center;">
+          <h2>Welcome to the Experience</h2>
+          <p>Click anywhere to start</p>
+        </div>
+      `;
+
+      const pixelStream = new PixelStreamCore.PixelStreamClient({
+        expId: "6e3faeaa-5289-4062-a448-df51df086b1d",
+        container: container,
+        InitialScreen: customInitialScreen,
+      });
+
+      window.pixelStream = pixelStream;
+
+      // Button references
+      document.getElementById("startBtn").addEventListener("click", () => {
+        pixelStream.initializeExperience();
+      });
+
+      document
+        .getElementById("enableCameraBtn")
+        .addEventListener("click", async () => {
+          try {
+            await pixelStream.enableCamera();
+          } catch (error) {
+            console.error("Failed to enable camera:", error);
+          }
+        });
+
+      document
+        .getElementById("disableCameraBtn")
+        .addEventListener("click", async () => {
+          try {
+            await pixelStream.disableCamera();
+          } catch (error) {
+            console.error("Failed to disable camera:", error);
+          }
+        });
+
+      document
+        .getElementById("enableAudioBtn")
+        .addEventListener("click", async () => {
+          try {
+            await pixelStream.enableCharacterAudio();
+          } catch (error) {
+            console.error("Failed to enable audio:", error);
+          }
+        });
+
+      document
+        .getElementById("disableAudioBtn")
+        .addEventListener("click", async () => {
+          try {
+            await pixelStream.disableCharacterAudio();
+          } catch (error) {
+            console.error("Failed to disable audio:", error);
+          }
+        });
+    </script>
+  </body>
+</html>

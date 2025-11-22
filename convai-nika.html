@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Aii Nika Pixel Stream Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://unpkg.com/@convai/experience-embed/dist/core/convai-embed.umd.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f0f0f0;
+      }
+
+      #pixel-stream-container {
+        width: 100%;
+        background: #000;
+        margin-bottom: 16px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      button {
+        padding: 10px 16px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Aii Nika Pixel Stream Demo</h1>
+    <div id="pixel-stream-container"></div>
+
+    <div class="controls">
+      <button id="startBtn">Start Experience</button>
+      <button id="enableCameraBtn">Enable Camera</button>
+      <button id="disableCameraBtn">Disable Camera</button>
+      <button id="enableAudioBtn">Enable Audio</button>
+      <button id="disableAudioBtn">Disable Audio</button>
+    </div>
+
+    <script>
+      const container = document.getElementById("pixel-stream-container");
+
+      // ---- Dynamic resize (4:3) ----
+      function resizeStream() {
+        const width = window.innerWidth * 0.9;  // adjust width %
+        const height = (width * 3) / 4;         // 4:3 ratio
+
+        container.style.width = width + "px";
+        container.style.height = height + "px";
+      }
+
+      window.addEventListener("resize", resizeStream);
+      resizeStream(); // initial call
+
+      // ---- Custom initial overlay ----
+      const customInitialScreen = document.createElement("div");
+      customInitialScreen.style.cssText = `
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        font-family: Arial, sans-serif;
+      `;
+      customInitialScreen.innerHTML = `
+        <div style="text-align: center;">
+          <h2>Welcome to the Chat</h2>
+          <p>Click Start Experience to begin</p>
+        </div>
+      `;
+
+      // ---- Pixel Stream client ----
+      const pixelStream = new PixelStreamCore.PixelStreamClient({
+        expId: "9be16b22-22d8-45a2-86fb-963aeb1f3357",
+        container: container,
+        InitialScreen: customInitialScreen,
+      });
+
+      window.pixelStream = pixelStream;
+
+      // ---- Buttons ----
+      document.getElementById("startBtn").addEventListener("click", () => {
+        pixelStream.initializeExperience();
+      });
+
+      document.getElementById("enableCameraBtn").addEventListener("click", () => {
+        pixelStream.enableCamera().catch(console.error);
+      });
+
+      document.getElementById("disableCameraBtn").addEventListener("click", () => {
+        pixelStream.disableCamera().catch(console.error);
+      });
+
+      document.getElementById("enableAudioBtn").addEventListener("click", () => {
+        pixelStream.enableCharacterAudio().catch(console.error);
+      });
+
+      document.getElementById("disableAudioBtn").addEventListener("click", () => {
+        pixelStream.disableCharacterAudio().catch(console.error);
+      });
+    </script>
+  </body>
+</html>

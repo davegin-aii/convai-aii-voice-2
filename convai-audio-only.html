@@ -17,7 +17,7 @@
         width: 100%;
         background: #000;
         margin-bottom: 16px;
-        position: relative;  /* important for overlay positioning */
+        position: relative; /* needed for overlays */
         overflow: hidden;
       }
 
@@ -68,6 +68,7 @@
       }
     </style>
   </head>
+
   <body>
     <h1>Aii Neuro Pixel Stream Demo</h1>
 
@@ -84,13 +85,15 @@
     <script>
       const container = document.getElementById("pixel-stream-container");
 
-      // ---- Dynamic resize (4:3) ----
+      // ---- Responsive resize (4:3) ----
       function resizeStream() {
-        const width = window.innerWidth * 0.9;  // adjust width %
-        const height = (width * 3) / 4;         // 4:3 ratio
-
-        container.style.width = width + "px";
-        container.style.height = height + "px";
+        // For desktop, we drive size via JS; on small screens the @media rule takes over
+        if (window.innerWidth > 600) {
+          const width = window.innerWidth * 0.9; // 90% of viewport width
+          const height = (width * 3) / 4; // 4:3 ratio
+          container.style.width = width + "px";
+          container.style.height = height + "px";
+        }
       }
 
       window.addEventListener("resize", resizeStream);
@@ -128,33 +131,58 @@
 
       window.pixelStream = pixelStream;
 
-      // ---- Black overlay to visually hide the stream ----
-      const videoMask = document.createElement("div");
-      videoMask.id = "pixel-stream-mask";
-      videoMask.style.cssText = `
-        position: absolute;
-        inset: 0;
-        background: #000;
-        z-index: 50;          /* on top of video */
-        pointer-events: none; /* let clicks pass through to any UI above */
-        display: none;        /* only show after start */
-      `;
-      // Add it now, but keep it hidden. We'll move it to top later.
-      container.appendChild(videoMask);
+      // ---- Black overlays to hide video but leave mic area visible ----
+      // Tune these if the mic area is larger or smaller
+      const MIC_SAFE_WIDTH = 120;   // px from left edge
+      const MIC_SAFE_HEIGHT = 120;  // px from bottom edge
 
-      function activateVideoMask() {
-        // Make sure it's the last child so it sits above the video element.
-        container.appendChild(videoMask);
-        videoMask.style.display = "block";
+      // Overlay 1: covers everything above the mic strip
+      const videoMaskTop = document.createElement("div");
+      videoMaskTop.id = "pixel-stream-mask-top";
+      videoMaskTop.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: ${MIC_SAFE_HEIGHT}px;
+        background: #000;
+        z-index: 50;
+        pointer-events: none;
+        display: none;
+      `;
+
+      // Overlay 2: covers the bottom area to the right of the mic
+      const videoMaskRight = document.createElement("div");
+      videoMaskRight.id = "pixel-stream-mask-right";
+      videoMaskRight.style.cssText = `
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        left: ${MIC_SAFE_WIDTH}px;
+        height: ${MIC_SAFE_HEIGHT}px;
+        background: #000;
+        z-index: 50;
+        pointer-events: none;
+        display: none;
+      `;
+
+      container.appendChild(videoMaskTop);
+      container.appendChild(videoMaskRight);
+
+      function activateVideoMasks() {
+        // Ensure they sit on top of any video/canvas
+        container.appendChild(videoMaskTop);
+        container.appendChild(videoMaskRight);
+        videoMaskTop.style.display = "block";
+        videoMaskRight.style.display = "block";
       }
 
       // ---- Buttons ----
       document.getElementById("startBtn").addEventListener("click", () => {
         pixelStream.initializeExperience();
 
-        // After starting, activate the mask so the video is covered.
-        // Small timeout gives Pixel Streaming time to mount its DOM.
-        setTimeout(activateVideoMask, 1000);
+        // After starting, activate masks so video is mostly hidden
+        setTimeout(activateVideoMasks, 1000);
       });
 
       document.getElementById("enableCameraBtn").addEventListener("click", () => {

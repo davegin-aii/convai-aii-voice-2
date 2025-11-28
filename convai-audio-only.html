@@ -5,6 +5,7 @@
     <title>Aii Neuro Pixel Stream Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://unpkg.com/@convai/experience-embed/dist/core/convai-embed.umd.js"></script>
+
     <style>
       body {
         font-family: sans-serif;
@@ -33,14 +34,7 @@
         cursor: pointer;
       }
 
-      /* 🚫 Hide the pixel stream VIDEO but keep container/UI visible */
-      #pixel-stream-container video,
-      #pixel-stream-container canvas {
-        opacity: 0 !important;        /* invisible video */
-        pointer-events: none !important; /* don't block clicks on overlay UI */
-      }
-
-      /* --- MOBILE FIXES (The Fix) --- */
+      /* MOBILE FIXES */
       @media (max-width: 600px) {
         #pixel-stream-container {
           width: 100vw !important;
@@ -53,7 +47,7 @@
         body {
           margin: 0;
           padding: 0;
-          padding-bottom: env(safe-area-inset-bottom); /* iPhone safe area */
+          padding-bottom: env(safe-area-inset-bottom);
           background: #f2f2f2;
         }
 
@@ -75,6 +69,7 @@
       }
     </style>
   </head>
+
   <body>
     <h1>Aii Neuro Pixel Stream Demo</h1>
     <div id="pixel-stream-container"></div>
@@ -133,6 +128,20 @@
       });
 
       window.pixelStream = pixelStream;
+
+      // 🔇 FORCE-HIDE VIDEO / CANVAS BUT KEEP UI (MIC) OVERLAY
+      function hidePixelStreamVisuals() {
+        // Anything Convai/PixelStreaming draws the scene onto
+        const elems = container.querySelectorAll("video, canvas");
+        elems.forEach((el) => {
+          el.style.opacity = "0";
+          el.style.filter = "opacity(0)";
+          el.style.pointerEvents = "none";  // don’t block clicks on overlay UI
+        });
+      }
+
+      // Run periodically in case Convai recreates the elements
+      const hideInterval = setInterval(hidePixelStreamVisuals, 500);
 
       // ---- Buttons ----
       document.getElementById("startBtn").addEventListener("click", () => {

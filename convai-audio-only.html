@@ -5,7 +5,6 @@
     <title>Aii Neuro Pixel Stream Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://unpkg.com/@convai/experience-embed/dist/core/convai-embed.umd.js"></script>
-
     <style>
       body {
         font-family: sans-serif;
@@ -14,23 +13,12 @@
         background: #f0f0f0;
       }
 
-      /* --- HIDE VIDEO COMPLETELY --- */
-      #pixel-stream-container video {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        width: 0 !important;
-        height: 0 !important;
-      }
-
-      /* --- SHRINK CONTAINER TO REMOVE BLACK BAR --- */
       #pixel-stream-container {
         width: 100%;
-        height: 0px !important;
-        margin: 0;
-        padding: 0;
+        background: #000;
+        margin-bottom: 16px;
+        position: relative;
         overflow: hidden;
-        background: transparent !important;
       }
 
       .controls {
@@ -45,19 +33,27 @@
         cursor: pointer;
       }
 
-      /* --- MOBILE FIXES --- */
+      /* 🚫 Hide the pixel stream VIDEO but keep container/UI visible */
+      #pixel-stream-container video,
+      #pixel-stream-container canvas {
+        opacity: 0 !important;        /* invisible video */
+        pointer-events: none !important; /* don't block clicks on overlay UI */
+      }
+
+      /* --- MOBILE FIXES (The Fix) --- */
       @media (max-width: 600px) {
         #pixel-stream-container {
-          width: 100% !important;
-          height: 0px !important; /* stays hidden on mobile too */
+          width: 100vw !important;
+          height: calc(100vw * 4 / 3) !important; /* 4:3 ratio on mobile */
           margin: 0;
           padding: 0;
+          position: relative;
         }
 
         body {
           margin: 0;
           padding: 0;
-          padding-bottom: env(safe-area-inset-bottom);
+          padding-bottom: env(safe-area-inset-bottom); /* iPhone safe area */
           background: #f2f2f2;
         }
 
@@ -79,11 +75,8 @@
       }
     </style>
   </head>
-
   <body>
     <h1>Aii Neuro Pixel Stream Demo</h1>
-
-    <!-- Pixel Stream Container (Video Hidden) -->
     <div id="pixel-stream-container"></div>
 
     <div class="controls">
@@ -97,7 +90,19 @@
     <script>
       const container = document.getElementById("pixel-stream-container");
 
-      // --- Custom initial overlay ---
+      // ---- Dynamic resize (4:3) ----
+      function resizeStream() {
+        const width = window.innerWidth * 0.9;  // adjust width %
+        const height = (width * 3) / 4;         // 4:3 ratio
+
+        container.style.width = width + "px";
+        container.style.height = height + "px";
+      }
+
+      window.addEventListener("resize", resizeStream);
+      resizeStream(); // initial call
+
+      // ---- Custom initial overlay ----
       const customInitialScreen = document.createElement("div");
       customInitialScreen.style.cssText = `
         width: 100%;
@@ -120,7 +125,7 @@
         </div>
       `;
 
-      // --- Pixel Stream Client ---
+      // ---- Pixel Stream client ----
       const pixelStream = new PixelStreamCore.PixelStreamClient({
         expId: "6e3faeaa-5289-4062-a448-df51df086b1d",
         container: container,
@@ -129,7 +134,7 @@
 
       window.pixelStream = pixelStream;
 
-      // --- Buttons ---
+      // ---- Buttons ----
       document.getElementById("startBtn").addEventListener("click", () => {
         pixelStream.initializeExperience();
       });

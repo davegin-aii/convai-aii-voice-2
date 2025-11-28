@@ -46,7 +46,7 @@
         body {
           margin: 0;
           padding: 0;
-          padding-bottom: env(safe-area-inset-bottom); /* iPhone safe area */
+          padding-bottom: env(safe-area-inset-bottom);
           background: #f2f2f2;
         }
 
@@ -139,7 +139,7 @@
       const LOGO_URL =
         "https://drive.google.com/uc?export=view&id=1jpGjiB0ifEzmHblhyUbL1uIbEZzE0A6t";
 
-      // Top overlay: big logo panel over most of the video
+      // Main logo overlay covering most of the frame
       const logoOverlay = document.createElement("div");
       logoOverlay.id = "pixel-stream-logo-overlay";
       logoOverlay.style.cssText = `
@@ -148,14 +148,27 @@
         left: 0;
         right: 0;
         bottom: ${MIC_SAFE_HEIGHT}px;
-        background: #000 url('${LOGO_URL}') center center no-repeat;
-        background-size: contain;   /* keep logo nicely scaled */
+        background: #000;
         z-index: 50;
-        pointer-events: none;
+        pointer-events: none;  /* let clicks pass through if needed */
         display: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       `;
 
-      // Bottom-right overlay: just black to hide video to the right of the mic
+      // Logo image itself
+      const logoImg = document.createElement("img");
+      logoImg.src = LOGO_URL;
+      logoImg.alt = "Aii Neuro Logo";
+      logoImg.style.cssText = `
+        max-width: 80%;
+        max-height: 80%;
+        object-fit: contain;
+      `;
+      logoOverlay.appendChild(logoImg);
+
+      // Bottom-right overlay to hide video to the right of the mic bubble
       const bottomRightOverlay = document.createElement("div");
       bottomRightOverlay.id = "pixel-stream-mask-bottom-right";
       bottomRightOverlay.style.cssText = `
@@ -174,17 +187,15 @@
       container.appendChild(bottomRightOverlay);
 
       function activateOverlays() {
-        // Make sure they sit on top of the video/canvas
         container.appendChild(logoOverlay);
         container.appendChild(bottomRightOverlay);
-        logoOverlay.style.display = "block";
+        logoOverlay.style.display = "flex";   // flex for centering
         bottomRightOverlay.style.display = "block";
       }
 
       // ---- Buttons ----
       document.getElementById("startBtn").addEventListener("click", () => {
         pixelStream.initializeExperience();
-
         // After starting, activate logo overlay so video is mostly hidden
         setTimeout(activateOverlays, 1000);
       });

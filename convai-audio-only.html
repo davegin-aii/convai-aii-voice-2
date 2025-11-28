@@ -5,7 +5,6 @@
     <title>Aii Neuro Pixel Stream Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://unpkg.com/@convai/experience-embed/dist/core/convai-embed.umd.js"></script>
-
     <style>
       body {
         font-family: sans-serif;
@@ -18,7 +17,7 @@
         width: 100%;
         background: #000;
         margin-bottom: 16px;
-        position: relative;
+        position: relative;  /* important for overlay positioning */
         overflow: hidden;
       }
 
@@ -34,7 +33,7 @@
         cursor: pointer;
       }
 
-      /* MOBILE FIXES */
+      /* --- MOBILE FIXES --- */
       @media (max-width: 600px) {
         #pixel-stream-container {
           width: 100vw !important;
@@ -47,7 +46,7 @@
         body {
           margin: 0;
           padding: 0;
-          padding-bottom: env(safe-area-inset-bottom);
+          padding-bottom: env(safe-area-inset-bottom); /* iPhone safe area */
           background: #f2f2f2;
         }
 
@@ -69,9 +68,9 @@
       }
     </style>
   </head>
-
   <body>
     <h1>Aii Neuro Pixel Stream Demo</h1>
+
     <div id="pixel-stream-container"></div>
 
     <div class="controls">
@@ -97,7 +96,7 @@
       window.addEventListener("resize", resizeStream);
       resizeStream(); // initial call
 
-      // ---- Custom initial overlay ----
+      // ---- Custom initial overlay (welcome screen) ----
       const customInitialScreen = document.createElement("div");
       customInitialScreen.style.cssText = `
         width: 100%;
@@ -129,23 +128,33 @@
 
       window.pixelStream = pixelStream;
 
-      // 🔇 FORCE-HIDE VIDEO / CANVAS BUT KEEP UI (MIC) OVERLAY
-      function hidePixelStreamVisuals() {
-        // Anything Convai/PixelStreaming draws the scene onto
-        const elems = container.querySelectorAll("video, canvas");
-        elems.forEach((el) => {
-          el.style.opacity = "0";
-          el.style.filter = "opacity(0)";
-          el.style.pointerEvents = "none";  // don’t block clicks on overlay UI
-        });
-      }
+      // ---- Black overlay to visually hide the stream ----
+      const videoMask = document.createElement("div");
+      videoMask.id = "pixel-stream-mask";
+      videoMask.style.cssText = `
+        position: absolute;
+        inset: 0;
+        background: #000;
+        z-index: 50;          /* on top of video */
+        pointer-events: none; /* let clicks pass through to any UI above */
+        display: none;        /* only show after start */
+      `;
+      // Add it now, but keep it hidden. We'll move it to top later.
+      container.appendChild(videoMask);
 
-      // Run periodically in case Convai recreates the elements
-      const hideInterval = setInterval(hidePixelStreamVisuals, 500);
+      function activateVideoMask() {
+        // Make sure it's the last child so it sits above the video element.
+        container.appendChild(videoMask);
+        videoMask.style.display = "block";
+      }
 
       // ---- Buttons ----
       document.getElementById("startBtn").addEventListener("click", () => {
         pixelStream.initializeExperience();
+
+        // After starting, activate the mask so the video is covered.
+        // Small timeout gives Pixel Streaming time to mount its DOM.
+        setTimeout(activateVideoMask, 1000);
       });
 
       document.getElementById("enableCameraBtn").addEventListener("click", () => {

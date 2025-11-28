@@ -46,7 +46,7 @@
         body {
           margin: 0;
           padding: 0;
-          padding-bottom: env(safe-area-inset-bottom);
+          padding-bottom: env(safe-area-inset-bottom); /* iPhone safe area */
           background: #f2f2f2;
         }
 
@@ -88,15 +88,15 @@
       // ---- Responsive resize (4:3) ----
       function resizeStream() {
         if (window.innerWidth > 600) {
-          const width = window.innerWidth * 0.9;
-          const height = (width * 3) / 4;
+          const width = window.innerWidth * 0.9; // 90% of viewport width
+          const height = (width * 3) / 4;        // 4:3 ratio
           container.style.width = width + "px";
           container.style.height = height + "px";
         }
       }
 
       window.addEventListener("resize", resizeStream);
-      resizeStream();
+      resizeStream(); // initial call
 
       // ---- Custom initial overlay (welcome screen) ----
       const customInitialScreen = document.createElement("div");
@@ -130,58 +130,63 @@
 
       window.pixelStream = pixelStream;
 
-      // ---- Logo overlays (instead of black masks) ----
+      // ---- Logo overlay that hides video, leaving mic corner visible ----
+      // Mic-safe window (bottom-left) size — tweak if needed
       const MIC_SAFE_WIDTH = 485;  // px from left edge
       const MIC_SAFE_HEIGHT = 145; // px from bottom edge
 
-      const LOGO_URL = https://drive.google.com/file/d/1jpGjiB0ifEzmHblhyUbL1uIbEZzE0A6t/view?usp=sharing;  // <== CHANGE THIS
+      // Direct-view URL for your Google Drive image
+      const LOGO_URL =
+        "https://drive.google.com/uc?export=view&id=1jpGjiB0ifEzmHblhyUbL1uIbEZzE0A6t";
 
-      // Overlay 1 (top masked area)
-      const videoMaskTop = document.createElement("div");
-      videoMaskTop.style.cssText = `
+      // Top overlay: big logo panel over most of the video
+      const logoOverlay = document.createElement("div");
+      logoOverlay.id = "pixel-stream-logo-overlay";
+      logoOverlay.style.cssText = `
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         bottom: ${MIC_SAFE_HEIGHT}px;
-        background: url('${LOGO_URL}') center center no-repeat;
-        background-size: contain;       /* scales nicely */
-        background-color: #000;        /* fallback */
+        background: #000 url('${LOGO_URL}') center center no-repeat;
+        background-size: contain;   /* keep logo nicely scaled */
         z-index: 50;
         pointer-events: none;
         display: none;
       `;
 
-      // Overlay 2 (bottom-right masked area)
-      const videoMaskRight = document.createElement("div");
-      videoMaskRight.style.cssText = `
+      // Bottom-right overlay: just black to hide video to the right of the mic
+      const bottomRightOverlay = document.createElement("div");
+      bottomRightOverlay.id = "pixel-stream-mask-bottom-right";
+      bottomRightOverlay.style.cssText = `
         position: absolute;
         bottom: 0;
         right: 0;
         left: ${MIC_SAFE_WIDTH}px;
         height: ${MIC_SAFE_HEIGHT}px;
-        background: url('${LOGO_URL}') center center no-repeat;
-        background-size: contain;
-        background-color: #000;
+        background: #000;
         z-index: 50;
         pointer-events: none;
         display: none;
       `;
 
-      container.appendChild(videoMaskTop);
-      container.appendChild(videoMaskRight);
+      container.appendChild(logoOverlay);
+      container.appendChild(bottomRightOverlay);
 
-      function activateVideoMasks() {
-        container.appendChild(videoMaskTop);
-        container.appendChild(videoMaskRight);
-        videoMaskTop.style.display = "block";
-        videoMaskRight.style.display = "block";
+      function activateOverlays() {
+        // Make sure they sit on top of the video/canvas
+        container.appendChild(logoOverlay);
+        container.appendChild(bottomRightOverlay);
+        logoOverlay.style.display = "block";
+        bottomRightOverlay.style.display = "block";
       }
 
       // ---- Buttons ----
       document.getElementById("startBtn").addEventListener("click", () => {
         pixelStream.initializeExperience();
-        setTimeout(activateVideoMasks, 1000);
+
+        // After starting, activate logo overlay so video is mostly hidden
+        setTimeout(activateOverlays, 1000);
       });
 
       document.getElementById("enableCameraBtn").addEventListener("click", () => {

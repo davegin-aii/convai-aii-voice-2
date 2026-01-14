@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Aii Nika Pixel Stream Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://unpkg.com/@convai/experience-embed/dist/core/convai-embed.umd.js"></script>
+
+    <style>
+      :root {
+        --page-pad: 16px;
+        --gap: 12px;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: var(--page-pad);
+        background: #f0f0f0;
+      }
+
+      h1 {
+        margin: 0 0 var(--gap) 0;
+        font-size: 22px;
+        line-height: 1.2;
+      }
+
+      #pixel-stream-container {
+        background: #000;
+        margin-bottom: var(--gap);
+        position: relative;
+        overflow: hidden;
+        border-radius: 10px;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      button {
+        padding: 10px 14px;
+        font-size: 15px;
+        cursor: pointer;
+        border: 0;
+        border-radius: 10px;
+        background: #ffffff;
+      }
+
+      button:hover { filter: brightness(0.97); }
+      button:active { transform: translateY(1px); }
+    </style>
+  </head>
+
+  <body>
+    <h1>Aii Nika Pixel Stream Demo</h1>
+
+    <div id="pixel-stream-container"></div>
+
+    <div class="controls">
+      <button id="startBtn">Start Experience</button>
+      <button id="enableCameraBtn">Enable Camera</button>
+      <button id="disableCameraBtn">Disable Camera</button>
+      <button id="enableAudioBtn">Enable Audio</button>
+      <button id="disableAudioBtn">Disable Audio</button>
+    </div>
+
+    <script>
+      const container = document.getElementById("pixel-stream-container");
+
+      // ---- Dynamic resize (4:3) with NO-SCROLL guarantee ----
+      function resizeStream() {
+        const pagePad =
+          parseInt(getComputedStyle(document.body).paddingTop, 10) || 16;
+
+        const headerEl = document.querySelector("h1");
+        const controlsEl = document.querySelector(".controls");
+
+        const headerHeight = headerEl ? headerEl.offsetHeight : 60;
+        const controlsHeight = controlsEl ? controlsEl.offsetHeight : 90;
+
+        const safety = 24;
+        const reservedVertical =
+          (pagePad * 2) + headerHeight + controlsHeight + safety;
+
+        const maxStreamHeight = Math.max(
+          180,
+          window.innerHeight - reservedVertical
+        );
+
+        // Also limit by width (avoid horizontal overflow)
+        const maxStreamWidth = Math.max(
+          320,
+          window.innerWidth - (pagePad * 2)
+        );
+        const widthLimitedHeight = (maxStreamWidth * 3) / 4;
+
+        const height = Math.floor(
+          Math.min(maxStreamHeight, widthLimitedHeight)
+        );
+        const width = Math.floor((height * 4) / 3);
+
+        container.style.height = height + "px";
+        container.style.width = width + "px";
+        container.style.marginLeft = "auto";
+        container.style.marginRight = "auto";
+      }
+
+      window.addEventListener("resize", resizeStream);
+      window.addEventListener("orientationchange", resizeStream);
+      resizeStream();
+
+      // ---- Custom initial overlay ----
+      const customInitialScreen = document.createElement("div");
+      customInitialScreen.style.cssText = `
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        font-family: Arial, sans-serif;
+      `;
+      customInitialScreen.innerHTML = `
+        <div style="text-align: center; padding: 16px;">
+          <h2 style="margin: 0 0 8px 0;">Welcome to the Chat</h2>
+          <p style="margin: 0; opacity: 0.9;">Click Start Experience to begin</p>
+        </div>
+      `;
+
+      // ---- Pixel Stream client ----
+      const pixelStream = new PixelStreamCore.PixelStreamClient({
+        expId: "9be16b22-22d8-45a2-86fb-963aeb1f3357",
+        container: container,
+        InitialScreen: customInitialScreen,
+      });
+
+      window.pixelStream = pixelStream;
+
+      // ---- Buttons ----
+      document.getElementById("startBtn").addEventListener("click", () => {
+        pixelStream.initializeExperience();
+      });
+
+      document.getElementById("enableCameraBtn").addEventListener("click", () => {
+        pixelStream.enableCamera().catch(console.error);
+      });
+
+      document.getElementById("disableCameraBtn").addEventListener("click", () => {
+        pixelStream.disableCamera().catch(console.error);
+      });
+
+      document.getElementById("enableAudioBtn").addEventListener("click", () => {
+        pixelStream.enableCharacterAudio().catch(console.error);
+      });
+
+      document.getElementById("disableAudioBtn").addEventListener("click", () => {
+        pixelStream.disableCharacterAudio().catch(console.error);
+      });
+
+      // Re-run sizing after initialization (Convai can inject DOM)
+      const originalInit = pixelStream.initializeExperience.bind(pixelStream);
+      pixelStream.initializeExperience = async () => {
+        const result = await originalInit();
+        setTimeout(resizeStream, 50);
+        setTimeout(resizeStream, 250);
+        return result;
+      };
+    </script>
+  </body>
+</html>
